@@ -1,53 +1,73 @@
-import tkinter as tk
-from tkinter import messagebox
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 from coins import Account
 
-def retrieve_balance():
-    try:
-        email = email_entry.get()
-        token = token_entry.get()
-        account = Account(email, token)
-        balance = account.retrieve_balance()
-        balance_label.config(text=f"Current Balance: {balance}")
-    except AssertionError as e:
-        messagebox.showerror("Error", str(e))
+class CoinsApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-def transfer_coins():
-    try:
-        email = email_entry.get()
-        token = token_entry.get()
-        account = Account(email, token)
-        recipient_email = recipient_email_entry.get()
-        amount = int(amount_entry.get())
-        message = account.transfer(amount, recipient_email)
-        messagebox.showinfo("Transfer Successful", message)
-        retrieve_balance()  # Update balance display
-    except AssertionError as e:
-        messagebox.showerror("Error", str(e))
+    def initUI(self):
+        self.setWindowTitle('Coins Account Manager')
+        layout = QVBoxLayout()
 
-app = tk.Tk()
-app.title("Coins Account Manager")
+        self.email_label = QLabel('Email:')
+        self.email_entry = QLineEdit()
+        layout.addWidget(self.email_label)
+        layout.addWidget(self.email_entry)
 
-tk.Label(app, text="Email:").pack()
-email_entry = tk.Entry(app)
-email_entry.pack()
+        self.token_label = QLabel('Token:')
+        self.token_entry = QLineEdit()
+        layout.addWidget(self.token_label)
+        layout.addWidget(self.token_entry)
 
-tk.Label(app, text="Token:").pack()
-token_entry = tk.Entry(app)
-token_entry.pack()
+        self.recipient_email_label = QLabel('Recipient Email:')
+        self.recipient_email_entry = QLineEdit()
+        layout.addWidget(self.recipient_email_label)
+        layout.addWidget(self.recipient_email_entry)
 
-tk.Label(app, text="Recipient Email:").pack()
-recipient_email_entry = tk.Entry(app)
-recipient_email_entry.pack()
+        self.amount_label = QLabel('Amount:')
+        self.amount_entry = QLineEdit()
+        layout.addWidget(self.amount_label)
+        layout.addWidget(self.amount_entry)
 
-tk.Label(app, text="Amount:").pack()
-amount_entry = tk.Entry(app)
-amount_entry.pack()
+        self.balance_label = QLabel('Current Balance: Unknown')
+        layout.addWidget(self.balance_label)
 
-balance_label = tk.Label(app, text="Current Balance: Unknown")
-balance_label.pack()
+        self.retrieve_balance_button = QPushButton('Retrieve Balance')
+        self.retrieve_balance_button.clicked.connect(self.retrieve_balance)
+        layout.addWidget(self.retrieve_balance_button)
 
-tk.Button(app, text="Retrieve Balance", command=retrieve_balance).pack()
-tk.Button(app, text="Transfer Coins", command=transfer_coins).pack()
+        self.transfer_coins_button = QPushButton('Transfer Coins')
+        self.transfer_coins_button.clicked.connect(self.transfer_coins)
+        layout.addWidget(self.transfer_coins_button)
 
-app.mainloop()
+        self.setLayout(layout)
+
+    def retrieve_balance(self):
+        try:
+            email = self.email_entry.text()
+            token = self.token_entry.text()
+            account = Account(email, token)
+            balance = account.retrieve_balance()
+            self.balance_label.setText(f"Current Balance: {balance}")
+        except AssertionError as e:
+            QMessageBox.critical(self, "Error", str(e))
+
+    def transfer_coins(self):
+        try:
+            email = self.email_entry.text()
+            token = self.token_entry.text()
+            account = Account(email, token)
+            recipient_email = self.recipient_email_entry.text()
+            amount = int(self.amount_entry.text())
+            message = account.transfer(amount, recipient_email)
+            QMessageBox.information(self, "Transfer Successful", message)
+            self.retrieve_balance()  # Update balance display
+        except AssertionError as e:
+            QMessageBox.critical(self, "Error", str(e))
+
+if __name__ == '__main__':
+    app = QApplication([])
+    ex = CoinsApp()
+    ex.show()
+    app.exec_()
