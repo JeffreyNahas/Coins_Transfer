@@ -1,4 +1,3 @@
-#Jeffrey Nahas/ McGill Id: 261089933
 import requests
 def dict_to_query(input_dict):
     '''
